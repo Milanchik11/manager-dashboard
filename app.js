@@ -1,5 +1,5 @@
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyRtOSUZzIBkJQCMwymvHvj3__AJIAlWXJhy0W-3VsUaTKf1md-L8a4EjJUB_hthbkftQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx7kcOMlUNQdyfo9TWPdu1ujymTvBG4vyeDlFIDG1TytLY94QZM-ifwCiI62dj0RcYjaQ/exec';
 
 const REFRESH_MS = 300000;
 
