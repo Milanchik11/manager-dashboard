@@ -153,7 +153,7 @@ function chartOptions() {
       },
       y: {
         ticks: { color: '#aebbd4' },
-        grid: { color: '#263247 }
+        grid: { color: '#263247' }
       }
     }
   };
@@ -459,7 +459,7 @@ function draw() {
           y: {
             stacked: true,
             ticks: { color: '#aebbd4' },
-            grid: { color: '#263247 }
+            grid: { color: '#263247' }
           }
         }
       }
