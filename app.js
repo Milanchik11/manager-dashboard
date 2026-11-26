@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbx7kcOMlUNQdyfo9TWPdu1ujymTvBG4vyeDlFIDG1TytLY94QZM-ifwCi62dj0RcYjaQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx7kcOMlUNQdyfo9TWPdu1ujymTvBG4vyeDlFIDG1TytLY94QZM-ifwCiI62dj0RcYjaQ/exec';
 
 const REFRESH_MS = 300000;
 
