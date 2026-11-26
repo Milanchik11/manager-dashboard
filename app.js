@@ -322,8 +322,8 @@ function draw() {
       options: chartOptions()
     }));
 
-    // Дополнительный график загруженности:
-    // только новые проекты, один столбец на менеджера.
+    // График загруженности: только новые проекты,
+    // один столбец на сотрудника.
     const selectedMonth = document.getElementById('month').value;
 
     const workloadEmployees = [...new Set([
@@ -406,36 +406,21 @@ function draw() {
         }))
       },
       options: {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      labels: {
-        color: '#b9c6df'
+        ...chartOptions(),
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#aebbd4' },
+            grid: { display: false }
+          },
+          y: {
+            stacked: true,
+            ticks: { color: '#aebbd4' },
+            grid: { color: '#263247' }
+          }
+        }
       }
-    }
-  },
-  scales: {
-    x: {
-      stacked: true,
-      ticks: {
-        color: '#aebbd4'
-      },
-      grid: {
-        display: false
-      }
-    },
-    y: {
-      stacked: true,
-      ticks: {
-        color: '#aebbd4'
-      },
-      grid: {
-        color: '#263247'
-      }
-    }
-  }
-}));
+    }));
   }
 }
 
