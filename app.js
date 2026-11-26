@@ -330,9 +330,9 @@ function draw() {
     const selectedMonth = document.getElementById('month').value;
 
     const workloadEmployees = [...new Set([
-      ...data.map(x => x.employee),
-      ...summaries.map(x => x.employee)
-    ].filter(name => name && name !== 'Анна')];
+  ...data.map(x => x.employee),
+  ...summaries.map(x => x.employee)
+].filter(name => name && name !== 'Анна'))];
 
     const workload = workloadEmployees.map(emp => ({
       employee: emp,
