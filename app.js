@@ -157,7 +157,7 @@ function chartOptions() {
       },
       y: {
         ticks: { color: '#aebbd4' },
-        grid: { color: '#263247 }
+        grid: { color: '#263247' }
       }
     }
   };
