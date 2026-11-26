@@ -406,21 +406,36 @@ function draw() {
         }))
       },
       options: {
-        ...chartOptions(),
-        scales: {
-          x: {
-            stacked: true,
-            ticks: { color: '#aebbd4' },
-            grid: { display: false }
-          },
-          y: {
-            stacked: true,
-            ticks: { color: '#aebbd4' },
-            grid: { color: '#263247 }
-          }
-        }
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      labels: {
+        color: '#b9c6df'
       }
-    }));
+    }
+  },
+  scales: {
+    x: {
+      stacked: true,
+      ticks: {
+        color: '#aebbd4'
+      },
+      grid: {
+        display: false
+      }
+    },
+    y: {
+      stacked: true,
+      ticks: {
+        color: '#aebbd4'
+      },
+      grid: {
+        color: '#263247'
+      }
+    }
+  }
+}));
   }
 }
 
