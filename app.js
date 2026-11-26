@@ -153,7 +153,7 @@ function chartOptions() {
       },
       y: {
         ticks: { color: '#aebbd4' },
-        grid: { color: '#263247' }
+        grid: { color: '#263247 }
       }
     }
   };
@@ -171,7 +171,6 @@ function draw() {
   ];
 
   const totals = categories.map(c => sumCategory(arr, c));
-
   const counts = categories.map(c =>
     arr.filter(x => x.category === c).length
   );
@@ -284,8 +283,6 @@ function draw() {
   destroyCharts();
 
   if (typeof Chart !== 'undefined') {
-
-    // График по категориям
     charts.push(new Chart(document.getElementById('categoryChart'), {
       type: 'bar',
       data: {
@@ -300,7 +297,6 @@ function draw() {
       options: chartOptions()
     }));
 
-    // График по сотрудникам (общая сумма)
     const eTotals = employeeNames.map(e =>
       categories.reduce((s, c) =>
         s + sumSummaryForEmployee(
@@ -326,95 +322,55 @@ function draw() {
       options: chartOptions()
     }));
 
-    // Новый график: Новые проекты — Загруженность
+    // Дополнительный график загруженности:
+    // только новые проекты, один столбец на менеджера.
     const selectedMonth = document.getElementById('month').value;
 
     const workloadEmployees = [...new Set([
-  ...data.map(x => x.employee),
-  ...summaries.map(x => x.employee)
-].filter(name => name && name !== 'Анна'))];
+      ...data.map(x => x.employee),
+      ...summaries.map(x => x.employee)
+    ].filter(name => name && name !== 'Анна'))];
 
     const workload = workloadEmployees.map(emp => ({
       employee: emp,
-      amount: sumSummaryForEmployee(emp, selectedMonth, 'Новые проекты')
+      amount: sumSummaryForEmployee(
+        emp,
+        selectedMonth,
+        'Новые проекты'
+      )
     })).sort((a, b) => b.amount - a.amount);
 
-    const workloadCanvas = document.getElementById('newProjectsChart');
-    const ctx = workloadCanvas.getContext('2d');
-
-    const barGradients = workload.map((_, i) => {
-      const g = ctx.createLinearGradient(0, 0, 0, 420);
-
-      const colors = [
-        ['#49c5ff', '#3478ff'],
-        ['#b27cff', '#7050f5'],
-        ['#46e2d1', '#15a9a2'],
-        ['#ffbf70', '#f18b36'],
-        ['#6fe0a8', '#2ca879']
-      ];
-
-      const pair = colors[i % colors.length];
-      g.addColorStop(0, pair[0]);
-      g.addColorStop(1, pair[1]);
-
-      return g;
-    });
-
-    charts.push(new Chart(workloadCanvas, {
+    charts.push(new Chart(document.getElementById('workloadChart'), {
       type: 'bar',
       data: {
         labels: workload.map(x => x.employee),
         datasets: [{
           label: 'Новые проекты',
           data: workload.map(x => x.amount),
-          backgroundColor: barGradients,
-          borderWidth: 0,
-          borderRadius: 9,
-          borderSkipped: false,
-          maxBarThickness: 100
+          backgroundColor: workload.map((_, i) => [
+            '#49c5ff',
+            '#b27cff',
+            '#46e2d1',
+            '#ffbf70',
+            '#6fe0a8'
+          ][i % 5]),
+          borderRadius: 8,
+          borderSkipped: false
         }]
       },
-
-      plugins: [{
-        id: 'workloadValueLabels',
-        afterDatasetsDraw(chart) {
-          const { ctx } = chart;
-          const meta = chart.getDatasetMeta(0);
-
-          ctx.save();
-          ctx.font = '600 13px Inter, Segoe UI, Arial';
-          ctx.fillStyle = '#eef4ff';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
-
-          meta.data.forEach((bar, i) => {
-            const value = chart.data.datasets[0].data[i] || 0;
-            ctx.fillText(fmt(value), bar.x, bar.y - 8);
-          });
-
-          ctx.restore();
-        }
-      }],
-
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        ...chartOptions(),
         plugins: {
-          legend: {
-            labels: { color: '#c4d2eb' }
-          },
+          legend: { labels: { color: '#c4d2eb' } },
           tooltip: {
             callbacks: {
-              label: context => ' ' + fmt(context.raw)
+              label: c => ' ' + fmt(c.raw)
             }
           }
         },
         scales: {
           x: {
-            ticks: {
-              color: '#c0cde5',
-              font: { size: 13, weight: '600' }
-            },
+            ticks: { color: '#c0cde5' },
             grid: { display: false }
           },
           y: {
@@ -424,15 +380,12 @@ function draw() {
               callback: value =>
                 new Intl.NumberFormat('ru-RU').format(value)
             },
-            grid: {
-              color: 'rgba(123,153,194,0.16)'
-            }
+            grid: { color: 'rgba(123,153,194,0.16)' }
           }
         }
       }
     }));
 
-    // График динамики по месяцам
     charts.push(new Chart(document.getElementById('monthlyChart'), {
       type: 'bar',
       data: {
@@ -443,7 +396,11 @@ function draw() {
             x.breakdown.find(b => b.category === c)?.amount || 0
           ),
           backgroundColor: [
-            '#6388f5', '#42b89a', '#8a79e6', '#e2a44c', '#55b5cf'
+            '#6388f5',
+            '#42b89a',
+            '#8a79e6',
+            '#e2a44c',
+            '#55b5cf'
           ][i],
           borderRadius: 4
         }))
@@ -459,7 +416,7 @@ function draw() {
           y: {
             stacked: true,
             ticks: { color: '#aebbd4' },
-            grid: { color: '#263247' }
+            grid: { color: '#263247 }
           }
         }
       }
