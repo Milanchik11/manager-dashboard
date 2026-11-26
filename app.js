@@ -106,8 +106,7 @@ function sumCategory(arr, category) {
   const m = document.getElementById('month').value;
 
   // При выбранном месяце используем сводные суммы по каждому сотруднику.
-  // Это важно, когда "Все сотрудники" выбраны: summaries складываются,
-  // а не заменяются суммой подробных строк.
+  // Когда выбраны все сотрудники, summaries складываются между собой.
   if (m !== 'all') {
     const employees = e === 'all'
       ? [...new Set(data.map(x => x.employee).filter(Boolean))]
@@ -132,7 +131,7 @@ function sumCategory(arr, category) {
     return result;
   }
 
-  // При выборе всех месяцев оставляем подсчет по подробным данным.
+  // При выборе всех месяцев считаем по подробным данным.
   return total(arr.filter(x => x.category === category));
 }
 
@@ -175,6 +174,7 @@ function draw() {
   ];
 
   const totals = categories.map(c => sumCategory(arr, c));
+
   const counts = categories.map(c =>
     arr.filter(x => x.category === c).length
   );
@@ -236,8 +236,7 @@ function draw() {
     `).join('') ||
     '<tr><td colspan="7" class="empty">Нет записей</td></tr>';
 
-  // Общий месячный блок: суммы по подробным строкам,
-  // группировка всех сотрудников и категорий.
+  // Месячный блок: подробные данные по всем сотрудникам.
   const months = [...new Set(data.map(x => x.month).filter(Boolean))]
     .sort(monthSort);
 
@@ -289,6 +288,8 @@ function draw() {
   destroyCharts();
 
   if (typeof Chart !== 'undefined') {
+
+    // График по категориям.
     charts.push(new Chart(document.getElementById('categoryChart'), {
       type: 'bar',
       data: {
@@ -303,54 +304,178 @@ function draw() {
       options: chartOptions()
     }));
 
-    const eTotals = employeeNames.map(e =>
-      categories.reduce((s, c) =>
-        s + sumSummaryForEmployee(
-          e,
-          document.getElementById('month').value,
-          c
-        ), 0)
-    );
+    // ==================================================
+    // НОВЫЕ ПРОЕКТЫ — ЗАГРУЖЕННОСТЬ
+    // Один столбец на сотрудника. Только новые проекты.
+    // ==================================================
 
-    charts.push(new Chart(document.getElementById('employeeChart'), {
+    const selectedMonth = document.getElementById('month').value;
+
+    const workloadEmployees = [...new Set([
+      ...data.map(x => x.employee),
+      ...summaries.map(x => x.employee)
+    ].filter(name => name && name !== 'Анна')];
+
+    const workload = workloadEmployees.map(emp => ({
+      employee: emp,
+      amount: sumSummaryForEmployee(
+        emp,
+        selectedMonth,
+        'Новые проекты'
+      )
+    })).sort((a, b) => b.amount - a.amount);
+
+    const workloadCanvas = document.getElementById('employeeChart');
+    const ctx = workloadCanvas.getContext('2d');
+
+    const barGradients = workload.map((_, i) => {
+      const g = ctx.createLinearGradient(
+        0, 0, 0, workloadCanvas.height || 420
+      );
+
+      const colors = [
+        ['#49c5ff', '#3478ff'],
+        ['#b27cff', '#7050f5'],
+        ['#46e2d1', '#15a9a2'],
+        ['#ffbf70', '#f18b36'],
+        ['#6fe0a8', '#2ca879']
+      ];
+
+      const pair = colors[i % colors.length];
+
+      g.addColorStop(0, pair[0]);
+      g.addColorStop(1, pair[1]);
+
+      return g;
+    });
+
+    charts.push(new Chart(workloadCanvas, {
       type: 'bar',
+
       data: {
-        labels: employeeNames,
+        labels: workload.map(x => x.employee),
+
         datasets: [{
-          label: 'Общая сумма работ',
-          data: eTotals,
-          backgroundColor: [
-            '#42b89a', '#8a79e6', '#e2a44c', '#6388f5'
-          ],
-          borderRadius: 5
+          label: 'Сумма новых проектов',
+          data: workload.map(x => x.amount),
+          backgroundColor: barGradients,
+
+          borderColor: workload.map((_, i) => [
+            '#49c5ff',
+            '#b27cff',
+            '#46e2d1',
+            '#ffbf70',
+            '#6fe0a8'
+          ][i % 5]),
+
+          borderWidth: 1,
+          borderRadius: 9,
+          borderSkipped: false,
+          maxBarThickness: 100
         }]
       },
-      options: chartOptions()
+
+      plugins: [{
+        id: 'workloadValueLabels',
+
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          const meta = chart.getDatasetMeta(0);
+
+          ctx.save();
+          ctx.font = '600 13px Inter, Segoe UI, Arial';
+          ctx.fillStyle = '#eef4ff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+
+          meta.data.forEach((bar, i) => {
+            const value = chart.data.datasets[0].data[i] || 0;
+            ctx.fillText(fmt(value), bar.x, bar.y - 8);
+          });
+
+          ctx.restore();
+        }
+      }],
+
+      options: {
+        ...chartOptions(),
+        maintainAspectRatio: false,
+
+        plugins: {
+          legend: {
+            display: true,
+            labels: { color: '#c4d2eb' }
+          },
+
+          tooltip: {
+            callbacks: {
+              label: context => ' ' + fmt(context.raw)
+            }
+          }
+        },
+
+        scales: {
+          x: {
+            ticks: {
+              color: '#c0cde5',
+              font: { size: 13, weight: '600' }
+            },
+            grid: { display: false }
+          },
+
+          y: {
+            beginAtZero: true,
+
+            ticks: {
+              color: '#aebbd4',
+              callback: value =>
+                new Intl.NumberFormat('ru-RU').format(value)
+            },
+
+            grid: {
+              color: 'rgba(123,153,194,0.16)'
+            }
+          }
+        }
+      }
     }));
 
+    // График динамики по месяцам.
     charts.push(new Chart(document.getElementById('monthlyChart'), {
       type: 'bar',
+
       data: {
         labels: monthlyData.map(x => x.month),
+
         datasets: categories.map((c, i) => ({
           label: c,
+
           data: monthlyData.map(x =>
             x.breakdown.find(b => b.category === c)?.amount || 0
           ),
+
           backgroundColor: [
-            '#6388f5', '#42b89a', '#8a79e6', '#e2a44c', '#55b5cf'
+            '#6388f5',
+            '#42b89a',
+            '#8a79e6',
+            '#e2a44c',
+            '#55b5cf'
           ][i],
+
           borderRadius: 4
         }))
       },
+
       options: {
         ...chartOptions(),
+
         scales: {
           x: {
             stacked: true,
             ticks: { color: '#aebbd4' },
             grid: { display: false }
           },
+
           y: {
             stacked: true,
             ticks: { color: '#aebbd4' },
