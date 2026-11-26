@@ -1,5 +1,4 @@
-
-const API_URL = 'https://script.google.com/macros/s/AKfycbx7kcOMlUNQdyfo9TWPdu1ujymTvBG4vyeDlFIDG1TytLY94QZM-ifwCiI62dj0RcYjaQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx7kcOMlUNQdyfo9TWPdu1ujymTvBG4vyeDlFIDG1TytLY94QZM-ifwCi62dj0RcYjaQ/exec';
 
 const REFRESH_MS = 300000;
 
@@ -106,11 +105,34 @@ function sumCategory(arr, category) {
   const e = document.getElementById('emp').value;
   const m = document.getElementById('month').value;
 
-  if (e !== 'all' && m !== 'all') {
-    const ss = periodSummary(e, m, category);
-    if (ss.length) return total(ss);
+  // При выбранном месяце используем сводные суммы по каждому сотруднику.
+  // Это важно, когда "Все сотрудники" выбраны: summaries складываются,
+  // а не заменяются суммой подробных строк.
+  if (m !== 'all') {
+    const employees = e === 'all'
+      ? [...new Set(data.map(x => x.employee).filter(Boolean))]
+      : [e];
+
+    let result = 0;
+
+    employees.forEach(emp => {
+      const ss = periodSummary(emp, m, category);
+
+      if (ss.length) {
+        result += total(ss);
+      } else {
+        result += total(data.filter(x =>
+          x.employee === emp &&
+          x.month === m &&
+          x.category === category
+        ));
+      }
+    });
+
+    return result;
   }
 
+  // При выборе всех месяцев оставляем подсчет по подробным данным.
   return total(arr.filter(x => x.category === category));
 }
 
@@ -135,7 +157,7 @@ function chartOptions() {
       },
       y: {
         ticks: { color: '#aebbd4' },
-        grid: { color: '#263247' }
+        grid: { color: '#263247 }
       }
     }
   };
@@ -332,7 +354,7 @@ function draw() {
           y: {
             stacked: true,
             ticks: { color: '#aebbd4' },
-            grid: { color: '#263247' }
+            grid: { color: '#263247 }
           }
         }
       }
