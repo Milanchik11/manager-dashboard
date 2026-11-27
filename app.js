@@ -386,41 +386,41 @@ function draw() {
       }
     }));
 
-      charts.push(new Chart(document.getElementById('monthlyChart'), {
-    type: 'bar',
-    data: {
-      labels: monthlyData.map(x => x.month),
-      datasets: categories.map((c, i) => ({
-        label: c,
-        data: monthlyData.map(x =>
-          x.breakdown.find(b => b.category === c)?.amount || 0
-        ),
-        backgroundColor: [
-          '#6388f5',
-          '#42b89a',
-          '#8a79e6',
-          '#e2a44c',
-          '#55b5cf'
-        ][i],
-        borderRadius: 4
-      }))
-    },
-    options: {
-      ...chartOptions(),
-      scales: {
-        x: {
-          stacked: true,
-          ticks: { color: '#aebbd4' },
-          grid: { display: false }
-        },
-        y: {
-          stacked: true,
-          ticks: { color: '#aebbd4' },
-          grid: { color: '#263247' }
+          charts.push(new Chart(document.getElementById('monthlyChart'), {
+      type: 'bar',
+      data: {
+        labels: monthlyData.map(x => x.month),
+        datasets: categories.map((c, i) => ({
+          label: c,
+          data: monthlyData.map(x =>
+            x.breakdown.find(b => b.category === c)?.amount || 0
+          ),
+          backgroundColor: [
+            '#6388f5',
+            '#42b89a',
+            '#8a79e6',
+            '#e2a44c',
+            '#55b5cf'
+          ][i],
+          borderRadius: 4
+        }))
+      },
+      options: {
+        ...chartOptions(),
+        scales: {
+          x: {
+            stacked: true,
+            ticks: { color: '#aebbd4' },
+            grid: { display: false }
+          },
+          y: {
+            stacked: true,
+            ticks: { color: '#aebbd4' },
+            grid: { color: '#263247' }
+          }
         }
       }
-    }
-  }));
+    }));
   }
 }
 
